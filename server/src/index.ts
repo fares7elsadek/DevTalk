@@ -1,5 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv'; 
+import bodyParser from 'body-parser';
+import dbConnect from './config/dbconnect';
 dotenv.config(); 
 import authRoute from './routes/auth';
 import commentsRoute from './routes/comments';
@@ -8,8 +10,8 @@ import postsRoute from './routes/posts';
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-
-
+dbConnect();
+app.use(bodyParser.json());
 
 // auth route
 app.use('/auth',authRoute);
