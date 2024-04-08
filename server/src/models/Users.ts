@@ -1,4 +1,5 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
+
 
 
 let userSchema = new mongoose.Schema({
@@ -48,6 +49,9 @@ let userSchema = new mongoose.Schema({
         default:false
     },
     passwordChangedAt: Date,
+    passwordToken:{
+        type:String
+    }
 },{
      timestamps:true
 });

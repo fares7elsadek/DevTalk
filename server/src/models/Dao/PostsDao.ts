@@ -1,6 +1,6 @@
-import {Post} from './indexDao';
+import { Post } from './types';
 
-export class Posts implements Post{
+export class Posts implements Post {
     title: String = "";
     description: String = "";
 

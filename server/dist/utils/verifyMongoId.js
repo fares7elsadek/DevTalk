@@ -10,3 +10,4 @@ const verifyId = (id) => {
         throw new Error("invalid");
     }
 };
+exports.default = verifyId;

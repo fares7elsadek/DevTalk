@@ -1,7 +1,7 @@
-import {Comment} from './indexDao'
+import { Comment } from './types'
 
 
-export class Comments implements Comment{
+export class Comments implements Comment {
     commment: String = "";
 
 }

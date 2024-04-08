@@ -1,14 +1,17 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const mongoose = require('mongoose');
-const LikesSchema = new mongoose.Schema({
+const mongoose_1 = __importDefault(require("mongoose"));
+const LikesSchema = new mongoose_1.default.Schema({
     user: {
-        type: mongoose.Schema.ObjectId,
+        type: mongoose_1.default.Schema.ObjectId,
         ref: "Users"
     },
     post: {
-        type: mongoose.Schema.ObjectId,
+        type: mongoose_1.default.Schema.ObjectId,
         ref: "Posts"
     }
 }, { timestamps: true });
-exports.default = mongoose.model('Likes', LikesSchema);
+exports.default = mongoose_1.default.model('Likes', LikesSchema);

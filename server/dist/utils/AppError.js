@@ -4,11 +4,13 @@ class AppError extends Error {
     constructor() {
         super();
         this.statusCode = 200;
+        this.errors = [];
     }
-    Create(message, statusCode) {
+    Create(message, statusCode, errors = []) {
         this.message = message;
         this.statusCode = statusCode;
+        this.errors = errors;
         return this;
     }
 }
-exports.default = new AppError();
+exports.default = AppError;

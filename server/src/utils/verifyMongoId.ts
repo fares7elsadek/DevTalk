@@ -8,3 +8,6 @@ const verifyId=(id:string)=>{
           throw new Error("invalid");
       }
 }
+
+
+export default verifyId;

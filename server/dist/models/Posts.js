@@ -1,7 +1,10 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const mongoose = require('mongoose');
-const PostsSchema = new mongoose.Schema({
+const mongoose_1 = __importDefault(require("mongoose"));
+const PostsSchema = new mongoose_1.default.Schema({
     title: {
         type: String,
         required: true
@@ -13,10 +16,10 @@ const PostsSchema = new mongoose.Schema({
     images: [{ type: String, default: "" }],
     postedAt: Date,
     user: {
-        type: mongoose.Schema.ObjectId,
+        type: mongoose_1.default.Schema.ObjectId,
         ref: "Users"
     },
-    comments: [{ type: mongoose.Schema.ObjectId, ref: "Comments" }],
-    likes: [{ type: mongoose.Schema.ObjectId, ref: "Likes" }]
+    comments: [{ type: mongoose_1.default.Schema.ObjectId, ref: "Comments" }],
+    likes: [{ type: mongoose_1.default.Schema.ObjectId, ref: "Likes" }]
 }, { timestamps: true });
-exports.default = mongoose.model('Posts', PostsSchema);
+exports.default = mongoose_1.default.model('Posts', PostsSchema);
