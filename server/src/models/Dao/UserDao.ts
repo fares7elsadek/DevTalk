@@ -14,7 +14,7 @@ class Users implements User {
     username: String = "";
     title: String = "";
 
-    async CreateNewUser(firstname:string,lastname:string,password:string,email:string,username:string,title:string){
+    async CreateNewUser(firstname:string,lastname:string,password:string,email:string,username:string,title:string,verifyToken:string){
         try{
             const hashedPassword = await bcrypt.hash(String(password),10);
             const newUser = new UserModel({
@@ -23,6 +23,7 @@ class Users implements User {
                email,
                title,
                username,
+               verifyToken,
                password:hashedPassword
             });
             await newUser.save();

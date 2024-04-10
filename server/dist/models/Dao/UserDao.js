@@ -25,7 +25,7 @@ class Users {
         this.username = "";
         this.title = "";
     }
-    CreateNewUser(firstname, lastname, password, email, username, title) {
+    CreateNewUser(firstname, lastname, password, email, username, title, verifyToken) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const hashedPassword = yield bcryptjs_1.default.hash(String(password), 10);
@@ -35,6 +35,7 @@ class Users {
                     email,
                     title,
                     username,
+                    verifyToken,
                     password: hashedPassword
                 });
                 yield newUser.save();

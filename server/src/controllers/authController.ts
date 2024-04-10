@@ -12,7 +12,7 @@ import bcrypt from 'bcryptjs';
 
 //register
 const registerUser = asyncWrapper(async(req,res,next)=>{
-    const {firstname,lastname,email,title,username} = req.body;
+    const {firstname,lastname,email,title,username,password,confirmedPassword} = req.body;
     const error = validationResult(req);
     if(!error.isEmpty()){
         const message = error.array();
@@ -33,13 +33,14 @@ const registerUser = asyncWrapper(async(req,res,next)=>{
     }
     const object = new UserClass();
     const PsswordToken = object.generatePasswordToken(firstname,lastname,email,title,username);
+    await object.CreateNewUser(firstname,lastname,password,email,username,title,PsswordToken);
     const emailOptions = {
         email,
         subject:"confirm email for DevTalk",
         url:`${req.protocol}://${req.get('host')}/api/auth/email_confirmation/${PsswordToken}`
     }
     object.sendPasswordEmail(emailOptions);
-     res.status(200).json({status:HttpMessage.SUCCESS,message:`email has been sent successfuly for ${email}`});
+    res.status(200).json({status:HttpMessage.SUCCESS,message:`email has been sent successfuly for ${email}`});
 });
 
 
@@ -60,6 +61,9 @@ const loginUser = asyncWrapper(async (req,res,next)=>{
         const result = await bcrypt.compare(String(password),user.password);
         if(!result){
             return next(new AppError().Create("invalid email or password",400));
+        }
+        if(!user.verified){
+            return next(new AppError().Create("email has not been verified yet",400));
         }
         const accessToken = new UserClass().generateJwtToken(user._id.toString(),user.firstname,user.role,user.isBlocked);
         res.cookie("DevTalk_token",accessToken,{
@@ -89,32 +93,28 @@ const verifyEmail = asyncWrapper(async(req,res,next)=>{
            return next(new AppError().Create('invalid or expired token',403));
        }
        const user = verify;
-       const {password ,confirmPassword}=req.body;
-       if(password!=confirmPassword){
-            return next(new AppError().Create('the password did not match',400));
+       const userData = await UserModel.findOne({email:user.email});
+       if(!userData || token!=userData.verifyToken){
+          return next(new AppError().Create('invalid or expired token',403));
        }
-       const object = new UserClass();
-       const email = user.email;
-       await object.CreateNewUser(user.firstname,user.lastname,password,email,user.username,user.title);
-       const userData = await UserModel.findOne({email});
-       if(!userData){
-           return next(new AppError().Create('something wrong has happend',400));
+       const done = await UserModel.findOneAndUpdate({email:user.email},{$set:{verified:true,verifyToken:""}});
+       if(!done){
+           return next(new AppError().Create('invalid or expired token',403));
        }
        const accessToken = new UserClass().generateJwtToken(userData._id.toString(),userData.firstname,userData.role,userData.isBlocked);
-       res.cookie("DevTalk_token",accessToken,{
+        res.cookie("DevTalk_token",accessToken,{
           httpOnly:true,
           maxAge:48*60*60*1000
         });
        const data={
-         firstname:user.firstname,
-         lastname:user.lastname,
-         email:user.email,
-         title:user.title,
-         username:user.username,
-         token:accessToken
-       }
-
-       res.status(200).json({status:HttpMessage.SUCCESS,user:{data}});
+            firstname:user.firstname,
+            lastname:user.lastname,
+            email:user.email,
+            title:user.title,
+            username:user.username,
+            token:accessToken
+        }
+       res.status(200).json({status:HttpMessage.SUCCESS,user:{message:"the email has been verified",data}});
 })
 
 

@@ -22,7 +22,7 @@ const httpMessage_1 = require("../utils/httpMessage");
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 //register
 const registerUser = (0, asyncWrapper_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const { firstname, lastname, email, title, username } = req.body;
+    const { firstname, lastname, email, title, username, password, confirmedPassword } = req.body;
     const error = (0, express_validator_1.validationResult)(req);
     if (!error.isEmpty()) {
         const message = error.array();
@@ -43,6 +43,7 @@ const registerUser = (0, asyncWrapper_1.default)((req, res, next) => __awaiter(v
     }
     const object = new UserDao_1.default();
     const PsswordToken = object.generatePasswordToken(firstname, lastname, email, title, username);
+    yield object.CreateNewUser(firstname, lastname, password, email, username, title, PsswordToken);
     const emailOptions = {
         email,
         subject: "confirm email for DevTalk",
@@ -53,6 +54,7 @@ const registerUser = (0, asyncWrapper_1.default)((req, res, next) => __awaiter(v
 }));
 const loginUser = (0, asyncWrapper_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { email, password } = req.body;
+    console.log("hello");
     const err = (0, express_validator_1.validationResult)(req);
     if (!err.isEmpty()) {
         const message = err.array();
@@ -68,6 +70,9 @@ const loginUser = (0, asyncWrapper_1.default)((req, res, next) => __awaiter(void
     const result = yield bcryptjs_1.default.compare(String(password), user.password);
     if (!result) {
         return next(new AppError_1.default().Create("invalid email or password", 400));
+    }
+    if (!user.verified) {
+        return next(new AppError_1.default().Create("email has not been verified yet", 400));
     }
     const accessToken = new UserDao_1.default().generateJwtToken(user._id.toString(), user.firstname, user.role, user.isBlocked);
     res.cookie("DevTalk_token", accessToken, {
@@ -94,16 +99,13 @@ const verifyEmail = (0, asyncWrapper_1.default)((req, res, next) => __awaiter(vo
         return next(new AppError_1.default().Create('invalid or expired token', 403));
     }
     const user = verify;
-    const { password, confirmPassword } = req.body;
-    if (password != confirmPassword) {
-        return next(new AppError_1.default().Create('the password did not match', 400));
+    const userData = yield Users_1.default.findOne({ email: user.email });
+    if (!userData || token != userData.verifyToken) {
+        return next(new AppError_1.default().Create('invalid or expired token', 403));
     }
-    const object = new UserDao_1.default();
-    const email = user.email;
-    yield object.CreateNewUser(user.firstname, user.lastname, password, email, user.username, user.title);
-    const userData = yield Users_1.default.findOne({ email });
-    if (!userData) {
-        return next(new AppError_1.default().Create('something wrong has happend', 400));
+    const done = yield Users_1.default.findOneAndUpdate({ email: user.email }, { $set: { verified: true, verifyToken: "" } });
+    if (!done) {
+        return next(new AppError_1.default().Create('invalid or expired token', 403));
     }
     const accessToken = new UserDao_1.default().generateJwtToken(userData._id.toString(), userData.firstname, userData.role, userData.isBlocked);
     res.cookie("DevTalk_token", accessToken, {
@@ -118,7 +120,7 @@ const verifyEmail = (0, asyncWrapper_1.default)((req, res, next) => __awaiter(vo
         username: user.username,
         token: accessToken
     };
-    res.status(200).json({ status: httpMessage_1.HttpMessage.SUCCESS, user: { data } });
+    res.status(200).json({ status: httpMessage_1.HttpMessage.SUCCESS, user: { message: "the email has been verified", data } });
 }));
 const authControler = {
     registerUser,

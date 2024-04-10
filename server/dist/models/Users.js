@@ -51,8 +51,12 @@ let userSchema = new mongoose_1.default.Schema({
         default: false
     },
     passwordChangedAt: Date,
-    passwordToken: {
+    verifyToken: {
         type: String
+    },
+    verified: {
+        type: Boolean,
+        default: false
     }
 }, {
     timestamps: true
