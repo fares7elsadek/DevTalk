@@ -35,7 +35,9 @@ class Users {
                     email,
                     title,
                     username,
-                    verifyToken,
+                    tokens: {
+                        verifyToken
+                    },
                     password: hashedPassword
                 });
                 yield newUser.save();
@@ -48,8 +50,8 @@ class Users {
     generateJwtToken(id, firstname, role, isBlocked) {
         return jwt.sign({ id, firstname, role, isBlocked }, process.env.JWT_SECRET, { expiresIn: '1d' });
     }
-    generatePasswordToken(firstname, lastname, email, title, username) {
-        return jwt.sign({ firstname, lastname, email, title, username }, process.env.JWT_SECRET, { expiresIn: '30m' });
+    generatePasswordToken(firstname, lastname, email, title) {
+        return jwt.sign({ firstname, lastname, email, title }, process.env.JWT_SECRET, { expiresIn: '30m' });
     }
     sendPasswordEmail(options) {
         return __awaiter(this, void 0, void 0, function* () {

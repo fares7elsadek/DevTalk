@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UsersLogin = exports.UsersRigister = void 0;
+exports.ResetPassword2 = exports.ResetPassword = exports.UsersLogin = exports.UsersRigister = void 0;
 const express_validator_1 = require("express-validator");
 const UsersRigister = () => {
     return [
@@ -20,3 +20,16 @@ const UsersLogin = () => {
     ];
 };
 exports.UsersLogin = UsersLogin;
+const ResetPassword = () => {
+    return [
+        (0, express_validator_1.body)('email').notEmpty().withMessage('email filed is required').isEmail().withMessage('Not a valid e-mail address').isLength({ max: 100 }).withMessage('email max length is 100')
+    ];
+};
+exports.ResetPassword = ResetPassword;
+const ResetPassword2 = () => {
+    return [
+        (0, express_validator_1.body)('password').notEmpty().withMessage('password filed is required').isLength({ max: 30 }).withMessage('password max length is 30').isLength({ min: 8 }).withMessage('password max length is 8'),
+        (0, express_validator_1.body)('confirmPassword').notEmpty().withMessage('password filed is required').isLength({ max: 30 }).withMessage('password max length is 30').isLength({ min: 8 }).withMessage('password max length is 8')
+    ];
+};
+exports.ResetPassword2 = ResetPassword2;

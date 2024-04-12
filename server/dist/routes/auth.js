@@ -11,6 +11,12 @@ const authController_1 = __importDefault(require("../controllers/authController"
 router.post('/register', (0, validationSchema_1.UsersRigister)(), authController_1.default.registerUser);
 //login
 router.post('/login', (0, validationSchema_1.UsersLogin)(), authController_1.default.loginUser);
+//reset password
+router.post('/reset-password', (0, validationSchema_1.ResetPassword)(), authController_1.default.ResetPasswordToken);
+//reset password
+router.post('/reset-password/:token', (0, validationSchema_1.ResetPassword2)(), authController_1.default.resetPassword);
+//logout
+router.get('/logout', authController_1.default.Logout_GET);
 //verify Email
-router.post('/email_confirmation/:token', authController_1.default.verifyEmail);
+router.put('/email_confirmation/:token', authController_1.default.verifyEmail);
 exports.default = router;

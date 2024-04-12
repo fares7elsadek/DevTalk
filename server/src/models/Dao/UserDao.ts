@@ -3,6 +3,7 @@ import UserModel from '../Users';
 import bcrypt from 'bcryptjs';
 const jwt = require('jsonwebtoken');
 import transporter from '../../config/emailSent';
+import { token } from 'morgan';
 
 
 
@@ -23,7 +24,9 @@ class Users implements User {
                email,
                title,
                username,
-               verifyToken,
+               tokens:{
+                  verifyToken
+               },
                password:hashedPassword
             });
             await newUser.save();
@@ -36,8 +39,8 @@ class Users implements User {
         return jwt.sign({id,firstname,role,isBlocked},process.env.JWT_SECRET,{expiresIn:'1d'});
     }
 
-    generatePasswordToken(firstname:string , lastname:string ,email:string , title:string,username:string){
-        return jwt.sign({firstname,lastname,email,title,username},process.env.JWT_SECRET,{expiresIn:'30m'});
+    generatePasswordToken(firstname:string , lastname:string ,email:string , title:string){
+        return jwt.sign({firstname,lastname,email,title},process.env.JWT_SECRET,{expiresIn:'30m'});
     }
 
     async sendPasswordEmail(options:any){

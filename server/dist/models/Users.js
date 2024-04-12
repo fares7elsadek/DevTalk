@@ -50,9 +50,22 @@ let userSchema = new mongoose_1.default.Schema({
         type: Boolean,
         default: false
     },
-    passwordChangedAt: Date,
-    verifyToken: {
-        type: String
+    tokens: {
+        DevTalk_Token: {
+            type: String,
+            default: ""
+        },
+        verifyToken: {
+            type: String,
+            default: ""
+        },
+        passwordResetToken: {
+            token: {
+                type: String,
+                default: ""
+            },
+            passwordChangedAt: Date
+        }
     },
     verified: {
         type: Boolean,

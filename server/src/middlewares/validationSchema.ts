@@ -1,4 +1,4 @@
-import { ExpressValidator, body, validationResult } from 'express-validator';
+import {  body } from 'express-validator';
 
 
 export const UsersRigister = () => {
@@ -19,4 +19,15 @@ export const UsersLogin = () => {
     ];
 };
 
+export const ResetPassword = () => {
+    return [
+        body('email').notEmpty().withMessage('email filed is required').isEmail().withMessage('Not a valid e-mail address').isLength({ max: 100 }).withMessage('email max length is 100')
+    ];
+};
 
+export const ResetPassword2 = () => {
+    return [
+        body('password').notEmpty().withMessage('password filed is required').isLength({ max: 30 }).withMessage('password max length is 30').isLength({ min: 8 }).withMessage('password max length is 8'),
+        body('confirmPassword').notEmpty().withMessage('password filed is required').isLength({ max: 30 }).withMessage('password max length is 30').isLength({ min: 8 }).withMessage('password max length is 8')
+    ];
+};

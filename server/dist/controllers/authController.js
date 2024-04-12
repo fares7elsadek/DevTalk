@@ -42,7 +42,7 @@ const registerUser = (0, asyncWrapper_1.default)((req, res, next) => __awaiter(v
         return next(err);
     }
     const object = new UserDao_1.default();
-    const PsswordToken = object.generatePasswordToken(firstname, lastname, email, title, username);
+    const PsswordToken = object.generatePasswordToken(firstname, lastname, email, title);
     yield object.CreateNewUser(firstname, lastname, password, email, username, title, PsswordToken);
     const emailOptions = {
         email,
@@ -54,7 +54,6 @@ const registerUser = (0, asyncWrapper_1.default)((req, res, next) => __awaiter(v
 }));
 const loginUser = (0, asyncWrapper_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { email, password } = req.body;
-    console.log("hello");
     const err = (0, express_validator_1.validationResult)(req);
     if (!err.isEmpty()) {
         const message = err.array();
@@ -75,6 +74,12 @@ const loginUser = (0, asyncWrapper_1.default)((req, res, next) => __awaiter(void
         return next(new AppError_1.default().Create("email has not been verified yet", 400));
     }
     const accessToken = new UserDao_1.default().generateJwtToken(user._id.toString(), user.firstname, user.role, user.isBlocked);
+    const done = yield Users_1.default.findByIdAndUpdate({ _id: user._id }, { $set: {
+            'tokens.DevTalk_Token': accessToken
+        } });
+    if (!done) {
+        return next(new AppError_1.default().Create("invalid email or password", 400));
+    }
     res.cookie("DevTalk_token", accessToken, {
         httpOnly: true,
         maxAge: 48 * 60 * 60 * 1000
@@ -100,14 +105,15 @@ const verifyEmail = (0, asyncWrapper_1.default)((req, res, next) => __awaiter(vo
     }
     const user = verify;
     const userData = yield Users_1.default.findOne({ email: user.email });
-    if (!userData || token != userData.verifyToken) {
-        return next(new AppError_1.default().Create('invalid or expired token', 403));
-    }
-    const done = yield Users_1.default.findOneAndUpdate({ email: user.email }, { $set: { verified: true, verifyToken: "" } });
-    if (!done) {
+    if (!userData || (userData.tokens && userData.tokens.verifyToken && token != userData.tokens.verifyToken)) {
+        console.log("hello");
         return next(new AppError_1.default().Create('invalid or expired token', 403));
     }
     const accessToken = new UserDao_1.default().generateJwtToken(userData._id.toString(), userData.firstname, userData.role, userData.isBlocked);
+    const done = yield Users_1.default.findOneAndUpdate({ email: user.email }, { $set: { verified: true, 'tokens.verifyToken': "", 'tokens.DevTalk_Token': accessToken } });
+    if (!done) {
+        return next(new AppError_1.default().Create('invalid or expired token', 403));
+    }
     res.cookie("DevTalk_token", accessToken, {
         httpOnly: true,
         maxAge: 48 * 60 * 60 * 1000
@@ -122,9 +128,100 @@ const verifyEmail = (0, asyncWrapper_1.default)((req, res, next) => __awaiter(vo
     };
     res.status(200).json({ status: httpMessage_1.HttpMessage.SUCCESS, user: { message: "the email has been verified", data } });
 }));
+const ResetPasswordToken = (0, asyncWrapper_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const email = req.body.email;
+    const err = (0, express_validator_1.validationResult)(req);
+    if (!err.isEmpty()) {
+        const message = err.array();
+        const statusCode = 400;
+        const result = message.map(obj => obj.msg);
+        const error = new AppError_1.default().Create("FAIL", statusCode, result);
+        return next(error);
+    }
+    const user = yield Users_1.default.findOne({ email });
+    if (!user) {
+        return next(new AppError_1.default().Create(`email has been sent successfuly for ${email}`, 200));
+    }
+    const object = new UserDao_1.default();
+    const passwordToken = object.generatePasswordToken(user.firstname, user.lastname, user.email, user.title);
+    const done = yield Users_1.default.findByIdAndUpdate({ _id: user._id }, { $set: { 'tokens.passwordResetToken.passwordResetToken': passwordToken } });
+    if (!done) {
+        return next(new AppError_1.default().Create(`something wrong has happened`, 200));
+    }
+    const emailOptions = {
+        email,
+        subject: "reset password link for DevTalk",
+        url: `${req.protocol}://${req.get('host')}/api/auth/reset-password/${passwordToken}`
+    };
+    object.sendPasswordEmail(emailOptions);
+    res.status(200).json({ status: httpMessage_1.HttpMessage.SUCCESS, message: `email has been sent successfuly for ${email}` });
+}));
+const resetPassword = (0, asyncWrapper_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const token = req.params.token;
+    const err = (0, express_validator_1.validationResult)(req);
+    if (!err.isEmpty()) {
+        const message = err.array();
+        const statusCode = 400;
+        const result = message.map(obj => obj.msg);
+        const error = new AppError_1.default().Create("FAIL", statusCode, result);
+        return next(error);
+    }
+    if (!token) {
+        return next(new AppError_1.default().Create('invalid request', 403));
+    }
+    const verify = jwt.verify(token, process.env.JWT_SECRET);
+    if (!verify) {
+        return next(new AppError_1.default().Create('invalid or expired token', 403));
+    }
+    const user = verify;
+    const userData = yield Users_1.default.findOne({ email: user.email });
+    if (!userData || (userData.tokens && userData.tokens.passwordResetToken && token != userData.tokens.passwordResetToken.token)) {
+        return next(new AppError_1.default().Create('invalid or expired token', 403));
+    }
+    const { password, confirmPassword } = req.body;
+    if (password != confirmPassword) {
+        return next(new AppError_1.default().Create('password did not match', 400));
+    }
+    const done = yield Users_1.default.findOneAndUpdate({ email: user.email }, { $set: { 'tokens.passwordResetToken.token': "", 'tokens.passwordResetToken.passwordChangedAt': Date.now() } });
+    if (!done) {
+        return next(new AppError_1.default().Create('invalid or expired token', 403));
+    }
+    const hashedPassword = yield bcryptjs_1.default.hash(String(password), 10);
+    const userPassword = Users_1.default.findByIdAndUpdate({ email: user.email }, { $set: { password: hashedPassword } });
+    if (!userPassword) {
+        return next(new AppError_1.default().Create('something wrong has happened', 400));
+    }
+    res.status(200).json({ status: httpMessage_1.HttpMessage.SUCCESS, message: `password has been changed successfully` });
+}));
+const Logout_GET = (0, asyncWrapper_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const { DevTalk_token } = req.cookies;
+    if (!DevTalk_token) {
+        return next(new AppError_1.default().Create('logout', 200));
+    }
+    const user = jwt.verify(DevTalk_token, process.env.JWT_SECRET);
+    if (!user) {
+        res.cookie('DevTalk_token', '', { maxAge: 1 });
+        return next(new AppError_1.default().Create('logout', 200));
+    }
+    const done = yield Users_1.default.findByIdAndUpdate({ _id: user.id }, {
+        $set: {
+            'tokens.DevTalk_Token': ""
+        }
+    });
+    if (!done) {
+        console.log("hello");
+        res.cookie('DevTalk_token', '', { maxAge: 1 });
+        return next(new AppError_1.default().Create('logout', 200));
+    }
+    res.cookie('DevTalk_token', '', { maxAge: 1 });
+    res.status(200).json({ status: httpMessage_1.HttpMessage.SUCCESS, message: `logout` });
+}));
 const authControler = {
     registerUser,
     loginUser,
-    verifyEmail
+    verifyEmail,
+    ResetPasswordToken,
+    resetPassword,
+    Logout_GET
 };
 exports.default = authControler;
