@@ -30,8 +30,6 @@ let userSchema = new mongoose.Schema({
         required:true
     },
     posts:[{type:mongoose.Schema.ObjectId,ref:"Posts"}],
-    comments:[{type:mongoose.Schema.ObjectId,ref:"Comments"}],
-    likes:[{type:mongoose.Schema.ObjectId,ref:"Likes"}],
     avatar:{
         type:String,
         default:""

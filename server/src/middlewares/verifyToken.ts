@@ -25,7 +25,7 @@ export const verifyToken = async(req:CustomeRequest,res:Response,next:NextFuncti
         if(!user){
             return next(new AppError().Create("not authorized",403));
         }
-        if(!user.tokens || user.tokens.DevTalk_Token || cookie.DevTalk_token!=user.tokens.DevTalk_Token){
+        if(!user.tokens || !user.tokens.DevTalk_Token || cookie.DevTalk_token!=user.tokens.DevTalk_Token){
             return next(new AppError().Create("not authorized",403));
         }
         req.user = curUser;
