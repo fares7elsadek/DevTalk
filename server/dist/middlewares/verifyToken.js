@@ -32,7 +32,7 @@ const verifyToken = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
         if (!user) {
             return next(new AppError_1.default().Create("not authorized", 403));
         }
-        if (!user.tokens || user.tokens.DevTalk_Token || cookie.DevTalk_token != user.tokens.DevTalk_Token) {
+        if (!user.tokens || !user.tokens.DevTalk_Token || cookie.DevTalk_token != user.tokens.DevTalk_Token) {
             return next(new AppError_1.default().Create("not authorized", 403));
         }
         req.user = curUser;

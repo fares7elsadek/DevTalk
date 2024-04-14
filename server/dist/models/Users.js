@@ -32,8 +32,6 @@ let userSchema = new mongoose_1.default.Schema({
         required: true
     },
     posts: [{ type: mongoose_1.default.Schema.ObjectId, ref: "Posts" }],
-    comments: [{ type: mongoose_1.default.Schema.ObjectId, ref: "Comments" }],
-    likes: [{ type: mongoose_1.default.Schema.ObjectId, ref: "Likes" }],
     avatar: {
         type: String,
         default: ""
