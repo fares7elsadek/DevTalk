@@ -2,7 +2,6 @@ import UserModel from '../models/Users';
 import { ExpressValidator, body,validationResult} from 'express-validator';
 import AppError from '../utils/AppError';
 const jwt = require('jsonwebtoken');
-import verifyId from '../utils/verifyMongoId';
 import asyncWrapper from '../middlewares/asyncWrapper';
 import UserClass from '../models/Dao/UserDao';
 import { HttpMessage } from '../utils/httpMessage';

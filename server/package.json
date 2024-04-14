@@ -5,7 +5,7 @@
   "main": "index.ts",
   "scripts": {
     "build": "tsc && node ./dist/index.js",
-    "start": "nodemon index.ts"
+    "dev": "nodemon ./src/index.ts"
   },
   "author": "Fares Elsadek",
   "license": "ISC",
@@ -30,8 +30,10 @@
     "@types/mongoose": "^5.11.97",
     "@types/morgan": "^1.9.9",
     "@types/nodemailer": "^6.4.14",
+    "@types/nodemon": "^1.19.6",
     "dotenv": "^16.4.5",
     "morgan": "^1.10.0",
-    "nodemon": "^3.1.0"
+    "nodemon": "^3.1.0",
+    "ts-node": "^10.9.2"
   }
 }
