@@ -10,11 +10,11 @@ const allowTo_1 = __importDefault(require("../middlewares/allowTo"));
 const roles_1 = require("../utils/roles");
 const router = express_1.default.Router();
 //get all comments in single post
-router.get('/list/:postId', commentsController_1.default.ListCommentsOnPost);
+router.get('/list/:id', commentsController_1.default.ListCommentsOnPost);
 //get single comment
-router.get('/list/single/:commentId', commentsController_1.default.ListSingleComment);
+router.get('/list/single/:id', commentsController_1.default.ListSingleComment);
 //delete comment
-router.delete('/remove/:commentId', verifyToken_1.verifyToken, (0, allowTo_1.default)("comment", roles_1.roles.admin, roles_1.roles.user), commentsController_1.default.DeleteComment);
+router.delete('/remove/:id', verifyToken_1.verifyToken, (0, allowTo_1.default)("comment", roles_1.roles.admin, roles_1.roles.user), commentsController_1.default.DeleteComment);
 //create comment
-router.post('/new/:postId', verifyToken_1.verifyToken, commentsController_1.default.CreateComment);
+router.post('/new/:id', verifyToken_1.verifyToken, commentsController_1.default.CreateComment);
 exports.default = router;

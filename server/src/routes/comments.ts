@@ -7,16 +7,16 @@ const router = express.Router();
 
 
 //get all comments in single post
-router.get('/list/:postId',CommentControler.ListCommentsOnPost);
+router.get('/list/:id',CommentControler.ListCommentsOnPost);
 
 //get single comment
-router.get('/list/single/:commentId',CommentControler.ListSingleComment);
+router.get('/list/single/:id',CommentControler.ListSingleComment);
 
 //delete comment
-router.delete('/remove/:commentId',verifyToken,allowTo("comment",roles.admin,roles.user),CommentControler.DeleteComment);
+router.delete('/remove/:id',verifyToken,allowTo("comment",roles.admin,roles.user),CommentControler.DeleteComment);
 
 //create comment
-router.post('/new/:postId',verifyToken,CommentControler.CreateComment);
+router.post('/new/:id',verifyToken,CommentControler.CreateComment);
 
 
 

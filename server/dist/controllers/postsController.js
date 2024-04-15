@@ -31,7 +31,7 @@ const ListPosts = (0, asyncWrapper_1.default)((req, res, next) => __awaiter(void
 }));
 //list single post
 const ListSinglePost = (0, asyncWrapper_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const id = req.params.postId;
+    const id = req.params.id;
     (0, verifyMongoId_1.default)(id);
     const post = yield Posts_1.default.findOne({ _id: id }, { '__v': false })
         .populate({ path: 'user', select: "id firstname lastname username" });
@@ -39,7 +39,7 @@ const ListSinglePost = (0, asyncWrapper_1.default)((req, res, next) => __awaiter
 }));
 //delete post
 const DeletePost = (0, asyncWrapper_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const id = req.params.postId;
+    const id = req.params.id;
     (0, verifyMongoId_1.default)(id);
     const Post = yield Posts_1.default.findByIdAndDelete({ _id: id });
     if (!Post) {

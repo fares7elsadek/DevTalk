@@ -27,7 +27,7 @@ const ListPosts = asyncWrapper(async(req:CustomeRequset,res,next)=>{
 
 //list single post
 const ListSinglePost = asyncWrapper(async(req,res,next)=>{
-    const id = req.params.postId;
+    const id = req.params.id;
     verifyId(id);
     const post = await PostModel.findOne({_id:id},{'__v':false})
     .populate({path:'user',select:"id firstname lastname username"});
@@ -36,7 +36,7 @@ const ListSinglePost = asyncWrapper(async(req,res,next)=>{
 
 //delete post
 const DeletePost = asyncWrapper(async(req,res,next)=>{
-    const id = req.params.postId;
+    const id = req.params.id;
     verifyId(id);
     const Post = await PostModel.findByIdAndDelete({_id:id});
     if(!Post){

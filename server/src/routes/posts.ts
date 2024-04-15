@@ -10,13 +10,13 @@ const router = express.Router();
 router.get('/list',PostControler.ListPosts)
 
 //list single post
-router.get('/list/:postId',PostControler.ListSinglePost)
+router.get('/list/:id',PostControler.ListSinglePost)
 
 //create new post
 router.post('/new',verifyToken,PostControler.CreatePost)
 
 //delete post
-router.delete('/remove/:postId',verifyToken,allowTo("post",roles.admin,roles.user),PostControler.DeletePost)
+router.delete('/remove/:id',verifyToken,allowTo("post",roles.admin,roles.user),PostControler.DeletePost)
 
 
 

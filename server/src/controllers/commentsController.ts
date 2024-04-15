@@ -16,7 +16,7 @@ interface CustomeRequset extends Request{
 
 //list all Comments on single post
 const ListCommentsOnPost = asyncWrapper(async(req:CustomeRequset,res,next)=>{
-    const postId = req.params.postId;
+    const postId = req.params.id;
     const query = req.query;
     const limit = query.limit || 10;
     const page = query.page || 1;
@@ -29,7 +29,7 @@ const ListCommentsOnPost = asyncWrapper(async(req:CustomeRequset,res,next)=>{
 
 //list single comment
 const ListSingleComment = asyncWrapper(async(req,res,next)=>{
-    const id = req.params.commentId;
+    const id = req.params.id;
     verifyId(id);
     const comment = await CommentModel.findOne({_id:id},{comment:true,user:true,postedAt:true})
     .populate({path:'user',select:"id firstname lastname username"});
@@ -38,7 +38,7 @@ const ListSingleComment = asyncWrapper(async(req,res,next)=>{
 
 //delete comment
 const DeleteComment = asyncWrapper(async(req,res,next)=>{
-    const id = req.params.commentId;
+    const id = req.params.id;
     verifyId(id);
     const Comment = await CommentModel.findByIdAndDelete({_id:id});
     if(!Comment){
@@ -57,7 +57,7 @@ const DeleteComment = asyncWrapper(async(req,res,next)=>{
 //create new Comment
 const CreateComment = asyncWrapper(async(req:CustomeRequset,res,next)=>{
     const userId = req.user?.id;
-    const postId = req.params.postId;
+    const postId = req.params.id;
     if(!userId){
         return next(new AppError().Create(`not authorized`,401));
     }

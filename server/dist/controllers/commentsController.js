@@ -21,7 +21,7 @@ const Comments_1 = __importDefault(require("../models/Comments"));
 const mongoose_1 = __importDefault(require("mongoose"));
 //list all Comments on single post
 const ListCommentsOnPost = (0, asyncWrapper_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const postId = req.params.postId;
+    const postId = req.params.id;
     const query = req.query;
     const limit = query.limit || 10;
     const page = query.page || 1;
@@ -33,7 +33,7 @@ const ListCommentsOnPost = (0, asyncWrapper_1.default)((req, res, next) => __awa
 }));
 //list single comment
 const ListSingleComment = (0, asyncWrapper_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const id = req.params.commentId;
+    const id = req.params.id;
     (0, verifyMongoId_1.default)(id);
     const comment = yield Comments_1.default.findOne({ _id: id }, { comment: true, user: true, postedAt: true })
         .populate({ path: 'user', select: "id firstname lastname username" });
@@ -41,7 +41,7 @@ const ListSingleComment = (0, asyncWrapper_1.default)((req, res, next) => __awai
 }));
 //delete comment
 const DeleteComment = (0, asyncWrapper_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const id = req.params.commentId;
+    const id = req.params.id;
     (0, verifyMongoId_1.default)(id);
     const Comment = yield Comments_1.default.findByIdAndDelete({ _id: id });
     if (!Comment) {
@@ -59,7 +59,7 @@ const DeleteComment = (0, asyncWrapper_1.default)((req, res, next) => __awaiter(
 const CreateComment = (0, asyncWrapper_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
-    const postId = req.params.postId;
+    const postId = req.params.id;
     if (!userId) {
         return next(new AppError_1.default().Create(`not authorized`, 401));
     }
