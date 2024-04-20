@@ -42,10 +42,14 @@ const ListSingleComment = (0, asyncWrapper_1.default)((req, res, next) => __awai
 //delete comment
 const DeleteComment = (0, asyncWrapper_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.params.id;
+    const userId = req.user.id;
     (0, verifyMongoId_1.default)(id);
-    const Comment = yield Comments_1.default.findByIdAndDelete({ _id: id });
+    const Comment = yield Comments_1.default.findById({ _id: id });
     if (!Comment) {
         return next(new AppError_1.default().Create(`not authorized`, 401));
+    }
+    if (userId != Comment.user) {
+        return next(new AppError_1.default().Create(`Comment not found`, 400));
     }
     const Post = yield Posts_1.default.findById({ _id: Comment.post });
     if (!Post) {
@@ -53,6 +57,10 @@ const DeleteComment = (0, asyncWrapper_1.default)((req, res, next) => __awaiter(
     }
     Post.comments = Post.comments.filter(CommentId => CommentId.toString() != id);
     yield Post.save();
+    const CommentDelete = yield Comments_1.default.findByIdAndDelete({ _id: id });
+    if (!CommentDelete) {
+        return next(new AppError_1.default().Create(`not authorized`, 401));
+    }
     res.status(200).json({ status: httpMessage_1.HttpMessage.SUCCESS, message: "the comment has been deleted" });
 }));
 //create new Comment

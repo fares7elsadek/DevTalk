@@ -16,5 +16,5 @@ router.get('/list/:id', postsController_1.default.ListSinglePost);
 //create new post
 router.post('/new', verifyToken_1.verifyToken, postsController_1.default.CreatePost);
 //delete post
-router.delete('/remove/:id', verifyToken_1.verifyToken, (0, allowTo_1.default)("post", roles_1.roles.admin, roles_1.roles.user), postsController_1.default.DeletePost);
+router.delete('/remove/:id', verifyToken_1.verifyToken, (0, allowTo_1.default)(roles_1.roles.admin, roles_1.roles.user), postsController_1.default.DeletePost);
 exports.default = router;

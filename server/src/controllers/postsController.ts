@@ -9,9 +9,7 @@ import mongoose, { ObjectId } from 'mongoose';
 
 
 interface CustomeRequset extends Request{
-    user?:{
-        id?:string
-    }
+    user?:any
 }
 
 //list all posts
@@ -35,15 +33,20 @@ const ListSinglePost = asyncWrapper(async(req,res,next)=>{
 })
 
 //delete post
-const DeletePost = asyncWrapper(async(req,res,next)=>{
+const DeletePost = asyncWrapper(async(req:CustomeRequset,res,next)=>{
     const id = req.params.id;
+    const userId = req.user.id;
     verifyId(id);
-    const Post = await PostModel.findByIdAndDelete({_id:id});
-    if(!Post){
+    const user = await UserModel.findById({_id:userId});
+    if(!user){
         return next(new AppError().Create(`not authorized`,401));
     }
-    const user = await UserModel.findById({_id:Post.user});
-    if(!user){
+    let PostFound = user.posts.filter(postId => postId.toString() == id);
+    if(PostFound.length==0){
+        return next(new AppError().Create(`Post not found`,400));
+    }
+    const Post = await PostModel.findByIdAndDelete({_id:id});
+    if(!Post){
         return next(new AppError().Create(`not authorized`,401));
     }
     user.posts = user.posts.filter(postId => postId.toString() != id);

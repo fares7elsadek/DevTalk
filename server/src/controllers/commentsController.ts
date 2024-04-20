@@ -9,9 +9,7 @@ import mongoose from 'mongoose';
 
 
 interface CustomeRequset extends Request{
-    user?:{
-        id?:string
-    }
+    user?:any
 }
 
 //list all Comments on single post
@@ -37,12 +35,16 @@ const ListSingleComment = asyncWrapper(async(req,res,next)=>{
 })
 
 //delete comment
-const DeleteComment = asyncWrapper(async(req,res,next)=>{
+const DeleteComment = asyncWrapper(async(req:CustomeRequset,res,next)=>{
     const id = req.params.id;
+    const userId = req.user.id;
     verifyId(id);
-    const Comment = await CommentModel.findByIdAndDelete({_id:id});
+    const Comment = await CommentModel.findById({_id:id});
     if(!Comment){
         return next(new AppError().Create(`not authorized`,401));
+    }
+    if(userId!=Comment.user){
+        return next(new AppError().Create(`Comment not found`,400));
     }
     const Post = await PostModel.findById({_id:Comment.post});
     if(!Post){
@@ -50,6 +52,10 @@ const DeleteComment = asyncWrapper(async(req,res,next)=>{
     }
     Post.comments = Post.comments.filter(CommentId => CommentId.toString() != id);
     await Post.save();
+    const CommentDelete = await CommentModel.findByIdAndDelete({_id:id});
+    if(!CommentDelete){
+        return next(new AppError().Create(`not authorized`,401));
+    }
     res.status(200).json({status:HttpMessage.SUCCESS,message:"the comment has been deleted"});
 })
 

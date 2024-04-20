@@ -13,7 +13,7 @@ router.get('/list/:id',CommentControler.ListCommentsOnPost);
 router.get('/list/single/:id',CommentControler.ListSingleComment);
 
 //delete comment
-router.delete('/remove/:id',verifyToken,allowTo("comment",roles.admin,roles.user),CommentControler.DeleteComment);
+router.delete('/remove/:id',verifyToken,allowTo(roles.admin,roles.user),CommentControler.DeleteComment);
 
 //create comment
 router.post('/new/:id',verifyToken,CommentControler.CreateComment);

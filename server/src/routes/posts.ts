@@ -16,7 +16,7 @@ router.get('/list/:id',PostControler.ListSinglePost)
 router.post('/new',verifyToken,PostControler.CreatePost)
 
 //delete post
-router.delete('/remove/:id',verifyToken,allowTo("post",roles.admin,roles.user),PostControler.DeletePost)
+router.delete('/remove/:id',verifyToken,allowTo(roles.admin,roles.user),PostControler.DeletePost)
 
 
 

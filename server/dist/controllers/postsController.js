@@ -40,13 +40,18 @@ const ListSinglePost = (0, asyncWrapper_1.default)((req, res, next) => __awaiter
 //delete post
 const DeletePost = (0, asyncWrapper_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.params.id;
+    const userId = req.user.id;
     (0, verifyMongoId_1.default)(id);
-    const Post = yield Posts_1.default.findByIdAndDelete({ _id: id });
-    if (!Post) {
+    const user = yield Users_1.default.findById({ _id: userId });
+    if (!user) {
         return next(new AppError_1.default().Create(`not authorized`, 401));
     }
-    const user = yield Users_1.default.findById({ _id: Post.user });
-    if (!user) {
+    let PostFound = user.posts.filter(postId => postId.toString() == id);
+    if (PostFound.length == 0) {
+        return next(new AppError_1.default().Create(`Post not found`, 400));
+    }
+    const Post = yield Posts_1.default.findByIdAndDelete({ _id: id });
+    if (!Post) {
         return next(new AppError_1.default().Create(`not authorized`, 401));
     }
     user.posts = user.posts.filter(postId => postId.toString() != id);
