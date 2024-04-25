@@ -74,12 +74,11 @@ const loginUser = (0, asyncWrapper_1.default)((req, res, next) => __awaiter(void
         return next(new AppError_1.default().Create("email has not been verified yet", 400));
     }
     const accessToken = new UserDao_1.default().generateJwtToken(user._id.toString(), user.firstname, user.role, user.isBlocked);
-    const done = yield Users_1.default.findByIdAndUpdate({ _id: user._id }, { $set: {
-            'tokens.DevTalk_Token': accessToken
-        } });
-    if (!done) {
-        return next(new AppError_1.default().Create("invalid email or password", 400));
-    }
+    const RefreshToken = new UserDao_1.default().generateRefreshToken(user._id.toString(), user.firstname, user.role, user.isBlocked);
+    res.cookie("refresh_token", RefreshToken, {
+        httpOnly: true,
+        maxAge: 48 * 60 * 60 * 1000
+    });
     res.cookie("DevTalk_token", accessToken, {
         httpOnly: true,
         maxAge: 48 * 60 * 60 * 1000
@@ -109,12 +108,17 @@ const verifyEmail = (0, asyncWrapper_1.default)((req, res, next) => __awaiter(vo
         console.log("hello");
         return next(new AppError_1.default().Create('invalid or expired token', 403));
     }
-    const accessToken = new UserDao_1.default().generateJwtToken(userData._id.toString(), userData.firstname, userData.role, userData.isBlocked);
-    const done = yield Users_1.default.findOneAndUpdate({ email: user.email }, { $set: { verified: true, 'tokens.verifyToken': "", 'tokens.DevTalk_Token': accessToken } });
+    const done = yield Users_1.default.findOneAndUpdate({ email: user.email }, { $set: { verified: true, 'tokens.verifyToken': "" } });
     if (!done) {
         return next(new AppError_1.default().Create('invalid or expired token', 403));
     }
+    const accessToken = new UserDao_1.default().generateJwtToken(userData._id.toString(), userData.firstname, userData.role, userData.isBlocked);
+    const RefreshToken = new UserDao_1.default().generateRefreshToken(userData._id.toString(), userData.firstname, userData.role, userData.isBlocked);
     res.cookie("DevTalk_token", accessToken, {
+        httpOnly: true,
+        maxAge: 48 * 60 * 60 * 1000
+    });
+    res.cookie("refresh_token", RefreshToken, {
         httpOnly: true,
         maxAge: 48 * 60 * 60 * 1000
     });
@@ -194,26 +198,8 @@ const resetPassword = (0, asyncWrapper_1.default)((req, res, next) => __awaiter(
     res.status(200).json({ status: httpMessage_1.HttpMessage.SUCCESS, message: `password has been changed successfully` });
 }));
 const Logout_GET = (0, asyncWrapper_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const { DevTalk_token } = req.cookies;
-    if (!DevTalk_token) {
-        return next(new AppError_1.default().Create('logout', 200));
-    }
-    const user = jwt.verify(DevTalk_token, process.env.JWT_SECRET);
-    if (!user) {
-        res.cookie('DevTalk_token', '', { maxAge: 1 });
-        return next(new AppError_1.default().Create('logout', 200));
-    }
-    const done = yield Users_1.default.findByIdAndUpdate({ _id: user.id }, {
-        $set: {
-            'tokens.DevTalk_Token': ""
-        }
-    });
-    if (!done) {
-        console.log("hello");
-        res.cookie('DevTalk_token', '', { maxAge: 1 });
-        return next(new AppError_1.default().Create('logout', 200));
-    }
     res.cookie('DevTalk_token', '', { maxAge: 1 });
+    res.cookie('refresh_token', '', { maxAge: 1 });
     res.status(200).json({ status: httpMessage_1.HttpMessage.SUCCESS, message: `logout` });
 }));
 const authControler = {

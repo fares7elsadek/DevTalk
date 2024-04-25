@@ -26,9 +26,11 @@ const ListCommentsOnPost = (0, asyncWrapper_1.default)((req, res, next) => __awa
     const limit = query.limit || 10;
     const page = query.page || 1;
     const skip = (+page - 1) * +limit;
-    const Comments = yield Posts_1.default.find({ _id: postId }, { comments: true, user: true }).limit(+limit).skip(skip)
-        .populate({ path: 'user', select: "id firstname lastname username" })
-        .populate({ path: 'comments', select: "comment postedAt" });
+    const Comments = yield Comments_1.default.find({ post: postId }, { user: true, post: true, postedAt: true, comment: true }).limit(+limit).skip(skip)
+        .populate({ path: "post", select: "title description Upvote Downvote" }).sort({ Upvote: -1 }).exec();
+    if (!Comments) {
+        return next(new AppError_1.default().Create(`there's a problem`, 400));
+    }
     res.status(200).json({ status: httpMessage_1.HttpMessage.SUCCESS, data: { Comments } });
 }));
 //list single comment
@@ -36,7 +38,9 @@ const ListSingleComment = (0, asyncWrapper_1.default)((req, res, next) => __awai
     const id = req.params.id;
     (0, verifyMongoId_1.default)(id);
     const comment = yield Comments_1.default.findOne({ _id: id }, { comment: true, user: true, postedAt: true })
-        .populate({ path: 'user', select: "id firstname lastname username" });
+        .populate({ path: 'user', select: "id firstname lastname username" })
+        .populate({ path: 'Upvote', select: "user" })
+        .populate({ path: 'Downvote', select: "user" });
     res.status(200).json({ status: httpMessage_1.HttpMessage.SUCCESS, data: { comment } });
 }));
 //delete comment

@@ -6,6 +6,7 @@ import { Request, Response, NextFunction } from 'express';
 import PostModel from '../models/Posts'
 import UserModel from '../models/Users';
 import mongoose, { ObjectId } from 'mongoose';
+import upvote from '../models/upvote';
 
 
 interface CustomeRequset extends Request{
@@ -19,7 +20,10 @@ const ListPosts = asyncWrapper(async(req:CustomeRequset,res,next)=>{
     const page = query.page || 1;
     const skip = (+page-1)*+limit;
     const posts = await PostModel.find({},{'__v':false}).limit(+limit).skip(skip)
-    .populate({path:'user',select:"id firstname lastname username"});
+    .populate({path:'user',select:"id firstname lastname username"})
+    .populate({path:'Upvote',select:"user"})
+    .populate({path:'Downvote',select:"user"})
+    .sort({Upvote:-1}).exec();
     res.status(200).json({status:HttpMessage.SUCCESS,data:{posts}});
 })
 
@@ -28,7 +32,9 @@ const ListSinglePost = asyncWrapper(async(req,res,next)=>{
     const id = req.params.id;
     verifyId(id);
     const post = await PostModel.findOne({_id:id},{'__v':false})
-    .populate({path:'user',select:"id firstname lastname username"});
+    .populate({path:'user',select:"id firstname lastname username"})
+    .populate({path:'Upvote',select:"user"})
+    .populate({path:'Downvote',select:"user"});
     res.status(200).json({status:HttpMessage.SUCCESS,data:{post}});
 })
 

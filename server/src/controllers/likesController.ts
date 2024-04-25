@@ -2,12 +2,12 @@ import verifyId from '../utils/verifyMongoId';
 import asyncWrapper from '../middlewares/asyncWrapper';
 import { HttpMessage } from '../utils/httpMessage';
 import AppError from '../utils/AppError';
-import { Request } from 'express';
 import PostModel from '../models/Posts';
-import LikeModel from '../models/Likes';
-import mongoose from 'mongoose';
-import Likes from '../models/Likes';
-
+import CommentModel from '../models/Comments';
+import { Request, Response, NextFunction } from 'express';
+import UpvoteModel from '../models/upvote';
+import DownvoteModel from '../models/downvote';
+import LikeDao from '../models/Dao/likesDao';
 
 interface CustomeRequest extends Request{
     user?:any
@@ -15,43 +15,41 @@ interface CustomeRequest extends Request{
 
 
 
-const LikePost = asyncWrapper(async(req:CustomeRequest,res,next)=>{
+
+const UpvotePost = asyncWrapper(async(req:CustomeRequest,res,next)=>{
     const postId = req.params.id;
     const userId = req.user.id;
     verifyId(postId);
-    const alreadyLiked = await LikeModel.findOne({$and:[{user:userId},{post:postId}]});
-    if(alreadyLiked!=null){
-        console.log("first",alreadyLiked);
-        const Lid = alreadyLiked._id;
-        const done = await PostModel.findByIdAndUpdate(
-            {_id: postId},
-            { $pull: { likes: Lid } },
-            { new: true }
-        );
-        if(!done){
-            return next(new AppError().Create(`something wrong has happened`,400));
-        }
-        await LikeModel.deleteOne({_id:Lid});
-        res.status(200).json({status:HttpMessage.SUCCESS});
-    }else{
-        console.log("second",alreadyLiked);
-        const Like = new LikeModel({
-            user:userId,
-            post:postId
-        });
-        await Like.save();
-        const done = await PostModel.findByIdAndUpdate(
-            {_id: postId},
-            { $push: { likes: Like._id } }, 
-            { new: true }
-        );
-        if(!done){
-            return next(new AppError().Create(`something wrong has happened`,400));
-        }
-        res.status(200).json({status:HttpMessage.SUCCESS});
-    }
-})
+    await LikeDao.LikeHelper(userId,postId,UpvoteModel,PostModel,"post","Upvote",next,res);
+});
+
+
+
+const DownvotePost = asyncWrapper(async(req:CustomeRequest,res,next)=>{
+    const postId = req.params.id;
+    const userId = req.user.id;
+    verifyId(postId);
+    await LikeDao.LikeHelper(userId,postId,DownvoteModel,PostModel,"post","Downvote",next,res);
+});
+
+
+const UpvoteComment = asyncWrapper(async(req:CustomeRequest,res,next)=>{
+    const commmentId = req.params.id;
+    const userId = req.user.id;
+    verifyId(commmentId);
+    await LikeDao.LikeHelper(userId,commmentId,UpvoteModel,CommentModel,"comment","Upvote",next,res);
+});
+
+const DownvoteComment = asyncWrapper(async(req:CustomeRequest,res,next)=>{
+    const commentId = req.params.id;
+    const userId = req.user.id;
+    verifyId(commentId);
+    await LikeDao.LikeHelper(userId,commentId,DownvoteModel,CommentModel,"comment","Downvote",next,res);
+});
 
 export default {
-    LikePost
+    UpvotePost,
+    DownvotePost,
+    UpvoteComment,
+    DownvoteComment
 }

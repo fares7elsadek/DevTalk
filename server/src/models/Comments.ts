@@ -12,7 +12,9 @@ const CommentsSchema = new mongoose.Schema({
     comment:{
         type:String,
         required:true
-    }
+    },
+    Upvote:[{type:mongoose.Schema.ObjectId,ref:"Upvote"}],
+    Downvote:[{type:mongoose.Schema.ObjectId,ref:"Downvote"}]
 },{timestamps:true});
 
 export default mongoose.model('Comments',CommentsSchema);

@@ -14,39 +14,38 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const verifyMongoId_1 = __importDefault(require("../utils/verifyMongoId"));
 const asyncWrapper_1 = __importDefault(require("../middlewares/asyncWrapper"));
-const httpMessage_1 = require("../utils/httpMessage");
-const AppError_1 = __importDefault(require("../utils/AppError"));
 const Posts_1 = __importDefault(require("../models/Posts"));
-const Likes_1 = __importDefault(require("../models/Likes"));
-const LikePost = (0, asyncWrapper_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+const Comments_1 = __importDefault(require("../models/Comments"));
+const upvote_1 = __importDefault(require("../models/upvote"));
+const downvote_1 = __importDefault(require("../models/downvote"));
+const likesDao_1 = __importDefault(require("../models/Dao/likesDao"));
+const UpvotePost = (0, asyncWrapper_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const postId = req.params.id;
     const userId = req.user.id;
     (0, verifyMongoId_1.default)(postId);
-    const alreadyLiked = yield Likes_1.default.findOne({ $and: [{ user: userId }, { post: postId }] });
-    if (alreadyLiked != null) {
-        console.log("first", alreadyLiked);
-        const Lid = alreadyLiked._id;
-        const done = yield Posts_1.default.findByIdAndUpdate({ _id: postId }, { $pull: { likes: Lid } }, { new: true });
-        if (!done) {
-            return next(new AppError_1.default().Create(`something wrong has happened`, 400));
-        }
-        yield Likes_1.default.deleteOne({ _id: Lid });
-        res.status(200).json({ status: httpMessage_1.HttpMessage.SUCCESS });
-    }
-    else {
-        console.log("second", alreadyLiked);
-        const Like = new Likes_1.default({
-            user: userId,
-            post: postId
-        });
-        yield Like.save();
-        const done = yield Posts_1.default.findByIdAndUpdate({ _id: postId }, { $push: { likes: Like._id } }, { new: true });
-        if (!done) {
-            return next(new AppError_1.default().Create(`something wrong has happened`, 400));
-        }
-        res.status(200).json({ status: httpMessage_1.HttpMessage.SUCCESS });
-    }
+    yield likesDao_1.default.LikeHelper(userId, postId, upvote_1.default, Posts_1.default, "post", "Upvote", next, res);
+}));
+const DownvotePost = (0, asyncWrapper_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const postId = req.params.id;
+    const userId = req.user.id;
+    (0, verifyMongoId_1.default)(postId);
+    yield likesDao_1.default.LikeHelper(userId, postId, downvote_1.default, Posts_1.default, "post", "Downvote", next, res);
+}));
+const UpvoteComment = (0, asyncWrapper_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const commmentId = req.params.id;
+    const userId = req.user.id;
+    (0, verifyMongoId_1.default)(commmentId);
+    yield likesDao_1.default.LikeHelper(userId, commmentId, upvote_1.default, Comments_1.default, "comment", "Upvote", next, res);
+}));
+const DownvoteComment = (0, asyncWrapper_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const commentId = req.params.id;
+    const userId = req.user.id;
+    (0, verifyMongoId_1.default)(commentId);
+    yield likesDao_1.default.LikeHelper(userId, commentId, downvote_1.default, Comments_1.default, "comment", "Downvote", next, res);
 }));
 exports.default = {
-    LikePost
+    UpvotePost,
+    DownvotePost,
+    UpvoteComment,
+    DownvoteComment
 };

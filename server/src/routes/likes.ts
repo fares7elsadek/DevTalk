@@ -4,11 +4,10 @@ import LikeControler from '../controllers/likesController';
 const router = express.Router();
 
 
-router.post('/new/:id',verifyToken,LikeControler.LikePost);
-
-
-
-
+router.post('/upvote/post/:id',verifyToken,LikeControler.UpvotePost);
+router.post('/downvote/post/:id',verifyToken,LikeControler.DownvotePost);
+router.post('/upvote/comment/:id',verifyToken,LikeControler.UpvoteComment);
+router.post('/downvote/comment/:id',verifyToken,LikeControler.DownvoteComment);
 
 
 

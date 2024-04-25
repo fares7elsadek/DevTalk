@@ -49,10 +49,6 @@ let userSchema = new mongoose_1.default.Schema({
         default: false
     },
     tokens: {
-        DevTalk_Token: {
-            type: String,
-            default: ""
-        },
         verifyToken: {
             type: String,
             default: ""

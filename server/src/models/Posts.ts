@@ -18,7 +18,8 @@ const PostsSchema = new mongoose.Schema({
         ref:"Users"
     },
     comments:[{type:mongoose.Schema.ObjectId,ref:"Comments"}],
-    likes:[{type:mongoose.Schema.ObjectId,ref:"Likes"}]
+    Upvote:[{type:mongoose.Schema.ObjectId,ref:"Upvote"}],
+    Downvote:[{type:mongoose.Schema.ObjectId,ref:"Downvote"}]
 },{timestamps:true})
 
 export default mongoose.model('Posts',PostsSchema);

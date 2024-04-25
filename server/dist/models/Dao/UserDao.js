@@ -48,7 +48,10 @@ class Users {
         });
     }
     generateJwtToken(id, firstname, role, isBlocked) {
-        return jwt.sign({ id, firstname, role, isBlocked }, process.env.JWT_SECRET, { expiresIn: '1d' });
+        return jwt.sign({ id, firstname, role, isBlocked }, process.env.JWT_SECRET, { expiresIn: '5m' });
+    }
+    generateRefreshToken(id, firstname, role, isBlocked) {
+        return jwt.sign({ id, firstname, role, isBlocked }, process.env.JWT_SECRET, { expiresIn: '30d' });
     }
     generatePasswordToken(firstname, lastname, email, title) {
         return jwt.sign({ firstname, lastname, email, title }, process.env.JWT_SECRET, { expiresIn: '30m' });

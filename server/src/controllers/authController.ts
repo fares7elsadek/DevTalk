@@ -65,12 +65,11 @@ const loginUser = asyncWrapper(async (req,res,next)=>{
             return next(new AppError().Create("email has not been verified yet",400));
         }
         const accessToken = new UserClass().generateJwtToken(user._id.toString(),user.firstname,user.role,user.isBlocked);
-        const done = await UserModel.findByIdAndUpdate({_id:user._id},{$set:{
-            'tokens.DevTalk_Token':accessToken
-        }});
-        if(!done){
-            return next(new AppError().Create("invalid email or password",400));
-        }
+        const RefreshToken = new UserClass().generateRefreshToken(user._id.toString(),user.firstname,user.role,user.isBlocked);
+        res.cookie("refresh_token",RefreshToken,{
+            httpOnly:true,
+            maxAge:48*60*60*1000
+        });
         res.cookie("DevTalk_token",accessToken,{
             httpOnly:true,
             maxAge:48*60*60*1000
@@ -102,14 +101,19 @@ const verifyEmail = asyncWrapper(async(req,res,next)=>{
           console.log("hello");
           return next(new AppError().Create('invalid or expired token',403));
        }
-       const accessToken = new UserClass().generateJwtToken(userData._id.toString(),userData.firstname,userData.role,userData.isBlocked);
-       const done = await UserModel.findOneAndUpdate({email:user.email},{$set:{verified:true,'tokens.verifyToken':"",'tokens.DevTalk_Token':accessToken}});
+       const done = await UserModel.findOneAndUpdate({email:user.email},{$set:{verified:true,'tokens.verifyToken':""}});
        if(!done){
            return next(new AppError().Create('invalid or expired token',403));
        }
+       const accessToken = new UserClass().generateJwtToken(userData._id.toString(),userData.firstname,userData.role,userData.isBlocked);
+       const RefreshToken = new UserClass().generateRefreshToken(userData._id.toString(),userData.firstname,userData.role,userData.isBlocked);
         res.cookie("DevTalk_token",accessToken,{
           httpOnly:true,
           maxAge:48*60*60*1000
+        });
+        res.cookie("refresh_token",RefreshToken,{
+            httpOnly:true,
+            maxAge:48*60*60*1000
         });
        const data={
             firstname:user.firstname,
@@ -192,26 +196,8 @@ const resetPassword = asyncWrapper(async(req,res,next)=>{
 
 
 const Logout_GET = asyncWrapper(async(req,res,next)=>{
-    const {DevTalk_token} = req.cookies;
-    if(!DevTalk_token){
-        return next(new AppError().Create('logout',200));
-    }
-    const user = jwt.verify(DevTalk_token,process.env.JWT_SECRET);
-    if(!user){
-        res.cookie('DevTalk_token','',{maxAge:1});
-        return next(new AppError().Create('logout',200));
-    }
-    const done = await UserModel.findByIdAndUpdate({_id:user.id},{
-        $set:{
-            'tokens.DevTalk_Token':""
-        }
-    });
-    if(!done){
-        console.log("hello");
-        res.cookie('DevTalk_token','',{maxAge:1});
-        return next(new AppError().Create('logout',200));
-    }
     res.cookie('DevTalk_token','',{maxAge:1});
+    res.cookie('refresh_token','',{maxAge:1});
     res.status(200).json({status:HttpMessage.SUCCESS,message:`logout`});
 })
 

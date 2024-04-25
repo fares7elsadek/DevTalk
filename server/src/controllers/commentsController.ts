@@ -19,9 +19,12 @@ const ListCommentsOnPost = asyncWrapper(async(req:CustomeRequset,res,next)=>{
     const limit = query.limit || 10;
     const page = query.page || 1;
     const skip = (+page-1)*+limit;
-    const Comments = await PostModel.find({_id:postId},{comments:true,user:true}).limit(+limit).skip(skip)
-    .populate({path:'user',select:"id firstname lastname username"})
-    .populate({path:'comments',select:"comment postedAt"});
+    const Comments = await CommentModel.find({post:postId},{user:true,post:true,postedAt:true,comment:true}).limit(+limit).skip(skip)
+    .populate({path:"post",select:"title description Upvote Downvote"}).sort({Upvote:-1}).exec();
+    if(!Comments){
+        return next(new AppError().Create(`there's a problem`,400));
+    }
+   
     res.status(200).json({status:HttpMessage.SUCCESS,data:{Comments}});
 })
 
@@ -30,7 +33,9 @@ const ListSingleComment = asyncWrapper(async(req,res,next)=>{
     const id = req.params.id;
     verifyId(id);
     const comment = await CommentModel.findOne({_id:id},{comment:true,user:true,postedAt:true})
-    .populate({path:'user',select:"id firstname lastname username"});
+    .populate({path:'user',select:"id firstname lastname username"})
+    .populate({path:'Upvote',select:"user"})
+    .populate({path:'Downvote',select:"user"});
     res.status(200).json({status:HttpMessage.SUCCESS,data:{comment}});
 })
 

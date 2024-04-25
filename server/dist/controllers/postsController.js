@@ -26,7 +26,10 @@ const ListPosts = (0, asyncWrapper_1.default)((req, res, next) => __awaiter(void
     const page = query.page || 1;
     const skip = (+page - 1) * +limit;
     const posts = yield Posts_1.default.find({}, { '__v': false }).limit(+limit).skip(skip)
-        .populate({ path: 'user', select: "id firstname lastname username" });
+        .populate({ path: 'user', select: "id firstname lastname username" })
+        .populate({ path: 'Upvote', select: "user" })
+        .populate({ path: 'Downvote', select: "user" })
+        .sort({ Upvote: -1 }).exec();
     res.status(200).json({ status: httpMessage_1.HttpMessage.SUCCESS, data: { posts } });
 }));
 //list single post
@@ -34,7 +37,9 @@ const ListSinglePost = (0, asyncWrapper_1.default)((req, res, next) => __awaiter
     const id = req.params.id;
     (0, verifyMongoId_1.default)(id);
     const post = yield Posts_1.default.findOne({ _id: id }, { '__v': false })
-        .populate({ path: 'user', select: "id firstname lastname username" });
+        .populate({ path: 'user', select: "id firstname lastname username" })
+        .populate({ path: 'Upvote', select: "user" })
+        .populate({ path: 'Downvote', select: "user" });
     res.status(200).json({ status: httpMessage_1.HttpMessage.SUCCESS, data: { post } });
 }));
 //delete post
