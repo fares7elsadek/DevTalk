@@ -94,6 +94,7 @@ const loginUser = (0, asyncWrapper_1.default)((req, res, next) => __awaiter(void
     res.status(200).json({ status: httpMessage_1.HttpMessage.SUCCESS, user: { data } });
 }));
 const verifyEmail = (0, asyncWrapper_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
     const token = req.params.token;
     if (!token) {
         return next(new AppError_1.default().Create('invalid request', 403));
@@ -104,10 +105,10 @@ const verifyEmail = (0, asyncWrapper_1.default)((req, res, next) => __awaiter(vo
     }
     const user = verify;
     const userData = yield Users_1.default.findOne({ email: user.email });
-    if (!userData || (userData.tokens && userData.tokens.verifyToken && token != userData.tokens.verifyToken)) {
-        console.log("hello");
+    if (token != ((_a = userData === null || userData === void 0 ? void 0 : userData.tokens) === null || _a === void 0 ? void 0 : _a.verifyToken)) {
         return next(new AppError_1.default().Create('invalid or expired token', 403));
     }
+    console.log((_b = userData.tokens) === null || _b === void 0 ? void 0 : _b.verifyToken);
     const done = yield Users_1.default.findOneAndUpdate({ email: user.email }, { $set: { verified: true, 'tokens.verifyToken': "" } });
     if (!done) {
         return next(new AppError_1.default().Create('invalid or expired token', 403));
@@ -161,6 +162,7 @@ const ResetPasswordToken = (0, asyncWrapper_1.default)((req, res, next) => __awa
     res.status(200).json({ status: httpMessage_1.HttpMessage.SUCCESS, message: `email has been sent successfuly for ${email}` });
 }));
 const resetPassword = (0, asyncWrapper_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _c, _d;
     const token = req.params.token;
     const err = (0, express_validator_1.validationResult)(req);
     if (!err.isEmpty()) {
@@ -179,7 +181,7 @@ const resetPassword = (0, asyncWrapper_1.default)((req, res, next) => __awaiter(
     }
     const user = verify;
     const userData = yield Users_1.default.findOne({ email: user.email });
-    if (!userData || (userData.tokens && userData.tokens.passwordResetToken && token != userData.tokens.passwordResetToken.token)) {
+    if (token != ((_d = (_c = userData === null || userData === void 0 ? void 0 : userData.tokens) === null || _c === void 0 ? void 0 : _c.passwordResetToken) === null || _d === void 0 ? void 0 : _d.token)) {
         return next(new AppError_1.default().Create('invalid or expired token', 403));
     }
     const { password, confirmPassword } = req.body;

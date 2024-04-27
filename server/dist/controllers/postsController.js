@@ -18,7 +18,9 @@ const httpMessage_1 = require("../utils/httpMessage");
 const AppError_1 = __importDefault(require("../utils/AppError"));
 const Posts_1 = __importDefault(require("../models/Posts"));
 const Users_1 = __importDefault(require("../models/Users"));
+const cloudinary_1 = __importDefault(require("../config/cloudinary"));
 const mongoose_1 = __importDefault(require("mongoose"));
+const deleteFile_1 = __importDefault(require("../utils/deleteFile"));
 //list all posts
 const ListPosts = (0, asyncWrapper_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const query = req.query;
@@ -66,6 +68,7 @@ const DeletePost = (0, asyncWrapper_1.default)((req, res, next) => __awaiter(voi
 //create new Post
 const CreatePost = (0, asyncWrapper_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
+    console.log("hello");
     const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
     if (!userId) {
         return next(new AppError_1.default().Create(`not authorized`, 401));
@@ -76,11 +79,26 @@ const CreatePost = (0, asyncWrapper_1.default)((req, res, next) => __awaiter(voi
         return next(new AppError_1.default().Create(`not authorized`, 401));
     }
     const { title, description } = req.body;
+    let uploadedImages = [];
+    const images = req.files;
+    if (images) {
+        try {
+            for (const file of images) {
+                const result = yield cloudinary_1.default.uploader.upload(file.path);
+                uploadedImages.push(result.secure_url);
+                (0, deleteFile_1.default)(file.path);
+            }
+        }
+        catch (err) {
+            return next(new AppError_1.default().Create(`somthing wrong has happend`, 401));
+        }
+    }
     const id = new mongoose_1.default.Types.ObjectId(userId);
     const NewPost = {
         title,
         description,
         user: id,
+        images: uploadedImages,
         postedAt: Date.now()
     };
     const Post = new Posts_1.default(NewPost);

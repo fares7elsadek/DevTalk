@@ -13,12 +13,15 @@ const auth_1 = __importDefault(require("./routes/auth"));
 const comments_1 = __importDefault(require("./routes/comments"));
 const likes_1 = __importDefault(require("./routes/likes"));
 const posts_1 = __importDefault(require("./routes/posts"));
+const user_1 = __importDefault(require("./routes/user"));
 const httpMessage_1 = require("./utils/httpMessage");
+const path = require('path');
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 5000;
 (0, dbconnect_1.default)();
 app.use(body_parser_1.default.json());
+app.use('/uploads', express_1.default.static(path.join(__dirname, 'uploads')));
 app.use((0, cookie_parser_1.default)());
 app.use((0, morgan_1.default)('dev'));
 // auth route
@@ -29,11 +32,13 @@ app.use('/api/comments', comments_1.default);
 app.use('/api/likes', likes_1.default);
 // posts route
 app.use('/api/posts', posts_1.default);
+// users route
+app.use('/api/user', user_1.default);
 app.all('*', (req, res, next) => {
     res.status(404).json({ message: httpMessage_1.HttpMessage.NOTFOUND, code: 404 });
 });
 app.use((error, req, res, next) => {
-    res.status(error.statusCode).json({ code: error.statusCode, message: error.message, errors: error.errors });
+    res.status(error.statusCode || 500).json({ code: error.statusCode, message: error.message, errors: error.errors });
 });
 app.listen(PORT, () => {
     console.log(`app lisen on port ${PORT}`);

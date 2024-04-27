@@ -318,7 +318,7 @@ class Users implements User {
                 </html>
                 `
               }
-              await transporter.sendMail(emailOptions).then((res:string) =>{
+              transporter.sendMail(emailOptions).then((res:string) =>{
                 console.log("email sent");
               })
           }catch(err){

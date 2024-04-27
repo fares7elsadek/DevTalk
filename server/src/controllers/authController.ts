@@ -97,10 +97,10 @@ const verifyEmail = asyncWrapper(async(req,res,next)=>{
        }
        const user = verify;
        const userData = await UserModel.findOne({email:user.email});
-       if(!userData || (userData.tokens && userData.tokens.verifyToken && token!=userData.tokens.verifyToken)){
-          console.log("hello");
+       if(token!=userData?.tokens?.verifyToken){
           return next(new AppError().Create('invalid or expired token',403));
        }
+       console.log(userData.tokens?.verifyToken);
        const done = await UserModel.findOneAndUpdate({email:user.email},{$set:{verified:true,'tokens.verifyToken':""}});
        if(!done){
            return next(new AppError().Create('invalid or expired token',403));
@@ -175,7 +175,7 @@ const resetPassword = asyncWrapper(async(req,res,next)=>{
     }
     const user = verify;
     const userData = await UserModel.findOne({email:user.email});
-    if(!userData || (userData.tokens && userData.tokens.passwordResetToken&&token!=userData.tokens.passwordResetToken.token)){
+    if(token!=userData?.tokens?.passwordResetToken?.token){
        return next(new AppError().Create('invalid or expired token',403));
     }
     const {password,confirmPassword} = req.body;

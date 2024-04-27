@@ -2,15 +2,18 @@ import verifyId from '../utils/verifyMongoId';
 import asyncWrapper from '../middlewares/asyncWrapper';
 import { HttpMessage } from '../utils/httpMessage';
 import AppError from '../utils/AppError';
-import { Request, Response, NextFunction } from 'express';
+import { Request } from 'express';
 import PostModel from '../models/Posts'
 import UserModel from '../models/Users';
-import mongoose, { ObjectId } from 'mongoose';
-import upvote from '../models/upvote';
+import cloudinary from '../config/cloudinary';
+import mongoose from 'mongoose';
+import DeleteFile from '../utils/deleteFile';
+
 
 
 interface CustomeRequset extends Request{
-    user?:any
+    user?:any,
+    files?:any
 }
 
 //list all posts
@@ -63,21 +66,36 @@ const DeletePost = asyncWrapper(async(req:CustomeRequset,res,next)=>{
 
 //create new Post
 const CreatePost = asyncWrapper(async(req:CustomeRequset,res,next)=>{
+    console.log("hello")
     const userId = req.user?.id;
     if(!userId){
         return next(new AppError().Create(`not authorized`,401));
     }
-    verifyId(userId)
+    verifyId(userId);
     const user = await UserModel.findById({_id:userId});
     if(!user){
         return next(new AppError().Create(`not authorized`,401));
     }
     const {title,description} = req.body;
+    let uploadedImages = [];
+    const images = req.files;
+    if(images){
+        try{
+            for(const file of images){
+                const result = await cloudinary.uploader.upload(file.path);
+                uploadedImages.push(result.secure_url);
+                DeleteFile(file.path);
+            }
+        }catch(err){
+            return next(new AppError().Create(`somthing wrong has happend`,401));
+        }
+    }
     const id = new mongoose.Types.ObjectId(userId);
     const NewPost={
         title,
         description,
         user:id,
+        images:uploadedImages,
         postedAt:Date.now()
     }
     const Post = new PostModel(NewPost);

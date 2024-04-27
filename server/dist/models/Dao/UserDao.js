@@ -328,7 +328,7 @@ class Users {
                 </html>
                 `
                 };
-                yield emailSent_1.default.sendMail(emailOptions).then((res) => {
+                emailSent_1.default.sendMail(emailOptions).then((res) => {
                     console.log("email sent");
                 });
             }
